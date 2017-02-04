@@ -15,7 +15,11 @@ var serviceSchema = new Schema({
     },
     address : {
         type : String,
-        required : true,
+        required : true
+    },
+    phone : {
+        type : String,
+        required : true
     },
     location : {
         latitude : Number,

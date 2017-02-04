@@ -2,21 +2,27 @@
  * Created by Dhanar J Kusuma on 04/02/2017.
  */
 
-var Specification = require('../model/motorSpec');
+var Service = require('../model/motorService');
 
 
 exports.insertCtrl = function(req, res, next){
     //save data
     var motor_id = req.params.motor;
-    var specification = new Specification;
-    specification._motor = motor_id;
-    specification.spec_key = req.body.spec_key;
-    specification.spec_value = req.body.spec_value;
-    specification.save(function(err){
+    var location = {
+        latitude : req.body.latitude,
+        longitude : req.body.longitude
+    };
+    var service = new Service;
+    service._motor = motor_id;
+    service.name = req.body.name;
+    service.address = req.body.address;
+    service.phone = req.body.phone;
+    service.location = location;
+    service.save(function(err){
         if(!err){
             res.json({
                 success : true,
-                data : specification,
+                data : service,
                 error : null
             });
         }else{
@@ -32,11 +38,11 @@ exports.insertCtrl = function(req, res, next){
 
 exports.getAllCtrl = function(req, res, next){
     var motor_id = req.params.motor;
-    Specification.find({_motor: motor_id}, function(err, specs){
+    Service.find({_motor: motor_id}, function(err, services){
         if(!err){
             res.json({
                 success : true,
-                data : specs,
+                data : services,
                 error : null
             });
         }else{
@@ -51,11 +57,11 @@ exports.getAllCtrl = function(req, res, next){
 
 exports.getCtrl = function(req, res, next){
     var id = req.params.id;
-    Specification.findById(id, function(err, spec){
-        if(!err && spec != null){
+    Service.findById(id, function(err, service){
+        if(!err && service != null){
             res.json({
                 success: true,
-                data : spec,
+                data : service,
                 error : null
             });
         }else{
@@ -71,14 +77,19 @@ exports.getCtrl = function(req, res, next){
 exports.updateCtrl = function(req, res, next){
     var id = req.params.id;
     var data = {
-        spec_key : req.body.spec_key,
-        spec_value : req.body.spec_value
+        name : req.body.name,
+        address : req.body.address,
+        phone : req.body.phone,
+        location : {
+            latitude : req.body.latitude,
+            longitude : req.body.longitude
+        }
     };
-    Specification.update({_id: id}, data, function(err, spec){
+    Service.update({_id: id}, data, function(err, service){
         if(!err){
             res.json({
                 success : true,
-                data : spec,
+                data : service,
                 error : null
             });
         }else{
@@ -93,7 +104,7 @@ exports.updateCtrl = function(req, res, next){
 
 exports.removeCtrl = function(req, res, next){
     var id = req.params.id;
-    Specification.remove({ _id : id },function(err){
+    Service.remove({ _id : id },function(err){
         if(!err){
             res.json({
                 success : true,

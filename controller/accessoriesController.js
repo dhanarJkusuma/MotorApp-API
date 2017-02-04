@@ -19,12 +19,13 @@ var upload = multer({
 var upload_image = upload.single('image');
 
 exports.insertCtrl = function(req, res, next){
+    console.log(req.body);
     upload_image(req, res, function(err){
         if(!err){
             //save data
             var accessories = new Accessories;
             accessories._motor = req.params.motor;
-            accessories.name = req.body.title;
+            accessories.name = req.body.name;
             accessories.description = req.body.description;
             accessories.image_url = 'http://' + req.hostname + '/uploads/accessories/' + req.file.filename
             accessories.save(function(err){
@@ -35,6 +36,7 @@ exports.insertCtrl = function(req, res, next){
                         error : null
                     });
                 }else{
+                    console.log(err);
                     res.json({
                         success : false,
                         data : {},
@@ -55,7 +57,7 @@ exports.insertCtrl = function(req, res, next){
 exports.getAllCtrl = function(req, res, next){
     var motor_id = req.params.motor;
     Accessories.find({_motor: motor_id}, function(err, accessories){
-        if(!err){
+        if(!err && accessories!=null){
             res.json({
                 success : true,
                 data : accessories,
@@ -74,7 +76,7 @@ exports.getAllCtrl = function(req, res, next){
 exports.getCtrl = function(req, res, next){
     var id = req.params.id;
     Accessories.findById(id, function(err, accessories){
-        if(!err && feature != null){
+        if(!err && accessories != null){
             res.json({
                 success: true,
                 data : accessories,
@@ -93,14 +95,15 @@ exports.getCtrl = function(req, res, next){
 exports.updateCtrl = function(req, res, next){
     var id = req.params.id;
     var data = {};
-    if(req.file != null){
-        upload_image(req, res, function(err){
+
+    upload_image(req, res, function(err){
+        if(req.file!=null){
             data = {
                 name : req.body.name,
                 description: req.body.description,
                 image_url : 'http://' + req.hostname + '/uploads/accessories/' + req.file.filename
             };
-            Accessories.update({id: id},data,function(err, accessories){
+            Accessories.update({_id: id},data,function(err, accessories){
                 if(!err){
                     res.json({
                         success : true,
@@ -115,28 +118,16 @@ exports.updateCtrl = function(req, res, next){
                     });
                 }
             });
-        })
-    }else{
-        data = {
-            name : req.body.name,
-            description: req.body.description
-        };
-        Accessories.update({id: id},data,function(err, accessories){
-            if(!err){
-                res.json({
-                    success : true,
-                    data : accessories,
-                    error : null
-                });
-            }else{
-                res.json({
-                    success : false,
-                    data : {},
-                    error : "Error while updating data."
-                });
-            }
-        });
-    }
+        }else{
+            res.json({
+                success : false,
+                data : {},
+                error : "Empty request file image."
+            });
+        }
+
+    })
+
 };
 
 exports.removeCtrl = function(req, res, next){

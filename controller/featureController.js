@@ -5,7 +5,7 @@ var multer = require('multer');
 var Feature = require('../model/motorFeature');
 var diskStorage = multer.diskStorage({
     destination : function(req, file, cb){
-        cb(null, 'public/uploads/feature');
+        cb(null, 'public/uploads/feature/');
     },
     filename : function(req, file, cb){
         cb(null, Date.now() + '_' + file.originalname);
@@ -21,27 +21,36 @@ var upload_image = upload.single('image');
 exports.insertCtrl = function(req, res, next){
     upload_image(req, res, function(err){
        if(!err){
-            //save data
-            var feature = new Feature;
-            feature._motor = req.params.motor;
-            feature.title = req.body.title;
-            feature.description = req.body.description;
-            feature.image_url = 'http://' + req.hostname + '/uploads/feature/' + req.file.filename
-            feature.save(function(err){
-                if(!err){
-                    res.json({
-                        success : true,
-                        data : feature,
-                        error : null
-                    });
-                }else{
-                    res.json({
-                        success : false,
-                        data : {},
-                        error : "Error while saving data to the database."
-                    });
-                }
-            });
+           if(req.file!=null){
+               //save data
+               var feature = new Feature;
+               feature._motor = req.params.motor;
+               feature.title = req.body.title;
+               feature.description = req.body.description;
+               feature.image_url = 'http://' + req.hostname + '/uploads/feature/' + req.file.filename
+               feature.save(function(err){
+                   if(!err){
+                       res.json({
+                           success : true,
+                           data : feature,
+                           error : null
+                       });
+                   }else{
+                       res.json({
+                           success : false,
+                           data : {},
+                           error : "Error while saving data to the database."
+                       });
+                   }
+               });
+           } else{
+             res.json({
+                 success : false,
+                 data : {},
+                 error : "Empty request file image."
+             })
+           }
+
        }else{
            res.json({
                success : false,
@@ -93,35 +102,14 @@ exports.getCtrl = function(req, res, next){
 exports.updateCtrl = function(req, res, next){
     var id = req.params.id;
     var data = {};
-    if(req.file != null){
-        upload_image(req, res, function(err){
-            data = {
-                title : req.body.title,
-                description: req.body.description,
-                image_url : 'http://' + req.hostname + '/uploads/feature/' + req.file.filename
-            };
-            Feature.update({id: id},data,function(err, feature){
-                if(!err){
-                    res.json({
-                        success : true,
-                        data : feature,
-                        error : null
-                    });
-                }else{
-                    res.json({
-                        success : false,
-                        data : {},
-                        error : "Error while updating data."
-                    });
-                }
-            });
-        })
-    }else{
+
+    upload_image(req, res, function(err){
         data = {
             title : req.body.title,
-            description: req.body.description
+            description: req.body.description,
+            image_url : 'http://' + req.hostname + '/uploads/feature/' + req.file.filename
         };
-        Feature.update({id: id},data,function(err, feature){
+        Feature.update({_id: id},data,function(err, feature){
             if(!err){
                 res.json({
                     success : true,
@@ -136,7 +124,7 @@ exports.updateCtrl = function(req, res, next){
                 });
             }
         });
-    }
+    });
 };
 
 exports.removeCtrl = function(req, res, next){
