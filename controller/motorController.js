@@ -29,7 +29,7 @@ var uploadThumbnail = multer({
     storage : thumbnailStorage
 });
 
-var upload_images = upload.any();
+var upload_images = upload.single('image');
 var upload_thumbnail = uploadThumbnail.single('thumbnail');
 exports.insertCtrl = function(req, res, next){
     upload_thumbnail(req, res, function(err){
@@ -39,7 +39,7 @@ exports.insertCtrl = function(req, res, next){
             motor._category = req.body.category_id;
             motor.name = req.body.name;
             motor.description = req.body.description;
-            motor.thumbnail_url = 'http://' + req.hostname + '/motor/thumbnail' + req.file.filename;
+            motor.thumbnail_url = 'http://' + req.hostname + '/motor/thumbnail/' + req.file.filename;
             motor.save(function(err){
                if(!err){
                    res.json({
@@ -115,14 +115,132 @@ exports.getCtrl = function(req, res, next){
 exports.insertImage = function(req, res, next){
   var id = req.params.id;
   Motor.findById(id, function(err, motor){
-     if(!err){
-         if(motor!=null){
-
-         }else{
-
-         }
-     } else{
-
+     if(!err && motor!=null){
+         upload_images(req, res, function(err){
+             if(!err){
+                 var image = {
+                     image_url : 'http://' + req.hostname + '/motor/' + req.file.filename,
+                     color : req.body.color
+                 };
+                 motor.images.push(image);
+                 motor.save(function(err){
+                     if(!err){
+                         res.json({
+                             success : true,
+                             data : motor,
+                             error : null
+                         });
+                     }else{
+                         res.json({
+                             success : false,
+                             data : {},
+                             error : "Error while saving data."
+                         });
+                     }
+                 });
+             } else{
+                 res.json({
+                     success : false,
+                     data : {},
+                     error : "Error uploading image."
+                 });
+             }
+         });
+     }else{
+         res.json({
+             success : false,
+             data : {},
+             error : "Something Error."
+         });
      }
   });
+};
+
+exports.removeImage = function(req, res, next){
+    var id = req.params.id;
+    console.log(req.body.color);
+    Motor.update({_id : id}, { $pull : { images : { color: req.body.color }}}, { safe: true },
+        function removeImageCallback(err, obj) {
+            if(!err && obj){
+                res.json({
+                    success : true,
+                    data : obj,
+                    error : null
+                });
+            }else{
+                res.json({
+                    success : false,
+                    data : {},
+                    error : "Error while removing image"
+                });
+            }
+        });
+};
+
+exports.updateCtrl = function(req, res, next){
+    var id = req.params.id;
+    var data = {};
+
+
+    upload_thumbnail(req, res, function(err){
+            if(!err){
+                if(req.file!=null){
+                    data = {
+                        _company : req.body.company_id,
+                        _category : req.body.category_id,
+                        name : req.body.name,
+                        description : req.body.description,
+                        thumbnail_url : 'http://' + req.hostname + '/motor/thumbnail/' + req.file.filename
+                    };
+                    Motor.update({_id: id}, data, function(err, motor){
+                        if(!err){
+                            res.json({
+                                success : true,
+                                data : motor,
+                                error : null
+                            });
+                        }else{
+
+                            res.json({
+                                success : false,
+                                data : {},
+                                error : "Error while updating data."
+                            });
+                        }
+                    });
+                }else{
+                    res.json({
+                        success : false,
+                        data : {},
+                        error : "Empty request file thumbnail."
+                    });
+                }
+
+            }else{
+                res.json({
+                    success :false,
+                    data : {},
+                    error : "Error while uploading image."
+                })
+            }
+        })
+
+
+};
+
+exports.removeCtrl = function(req, res, next){
+    var id = req.params.id;
+    Motor.remove({ _id : id },function(err){
+        if(!err){
+            res.json({
+                success : true,
+                error : null
+            });
+        }else{
+            res.json({
+                success : true,
+                error : null
+            });
+        }
+    });
 };

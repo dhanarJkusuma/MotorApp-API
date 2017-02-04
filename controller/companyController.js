@@ -164,17 +164,13 @@ exports.updateCoverCtrl = function(req, res, next){
                                 success : true,
                                 error : null
                             });
-                        }
-                        else{
+                        }else{
                             res.json({
                                 success : false,
-                                error : "Error updateing image url."
+                                error : "Error updating image url."
                             });
                         }
-
                     });
-
-
                 }else{
                     res.json({
                         success : false,
