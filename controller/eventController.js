@@ -2,30 +2,35 @@
  * Created by Dhanar J Kusuma on 04/02/2017.
  */
 
-var Service = require('../model/motorService');
+var Event = require('../model/event');
 
+var locQuery = function(coords, distance){
+    return { location: { $near: { $geometry: { type: "Point", coordinates: coords }, $maxDistance: parseInt(distance)}}}
+};
 
 exports.insertCtrl = function(req, res, next){
     //save data
-    var motor_id = req.params.motor;
+
     var location = [
         req.body.latitude,
         req.body.longitude
     ];
-    var service = new Service;
-    service._motor = motor_id;
-    service.name = req.body.name;
-    service.address = req.body.address;
-    service.phone = req.body.phone;
-    service.location = location;
-    service.save(function(err){
+    var event = new Event;
+    event.title = req.body.title;
+    event.description = req.body.description;
+    event.frequency = req.body.frequency;
+    event.begin_time = req.body.begin_time;
+    event.end_time = req.body.end_time;
+    event.location = location;
+    event.save(function(err){
         if(!err){
             res.json({
                 success : true,
-                data : service,
+                data : event,
                 error : null
             });
         }else{
+            //console.log(err);
             res.json({
                 success : false,
                 data : {},
@@ -35,13 +40,35 @@ exports.insertCtrl = function(req, res, next){
     });
 };
 
-exports.getAllCtrl = function(req, res, next){
-    var motor_id = req.params.motor;
-    Service.find({_motor: motor_id}, function(err, services){
+exports.getAreaEventCtrl = function(req ,res, next){
+    var coordinate = [
+        req.body.latitude,
+        req.body.longitude
+    ];
+
+    Event.find(locQuery(coordinate, 10),function(err, events){
         if(!err){
             res.json({
                 success : true,
-                data : services,
+                data : events,
+                error : null
+            });
+        }else{
+            res.json({
+                success : false,
+                data : {},
+                error : "Error while fetching data from database."
+            });
+        }
+    });
+};
+
+exports.getAllCtrl = function(req, res, next){
+    Event.find({}, function(err, events){
+        if(!err){
+            res.json({
+                success : true,
+                data : events,
                 error : null
             });
         }else{
@@ -56,11 +83,11 @@ exports.getAllCtrl = function(req, res, next){
 
 exports.getCtrl = function(req, res, next){
     var id = req.params.id;
-    Service.findById(id, function(err, service){
-        if(!err && service != null){
+    Event.findById(id, function(err, event){
+        if(!err && event != null){
             res.json({
                 success: true,
-                data : service,
+                data : event,
                 error : null
             });
         }else{
@@ -76,19 +103,21 @@ exports.getCtrl = function(req, res, next){
 exports.updateCtrl = function(req, res, next){
     var id = req.params.id;
     var data = {
-        name : req.body.name,
-        address : req.body.address,
-        phone : req.body.phone,
+        title : req.body.name,
+        description : req.body.address,
+        frequency : req.body.frequency,
+        begin_time : req.body.begin_time,
+        end_time : req.body.end_time,
         location : [
             req.body.latitude,
             req.body.longitude
         ]
     };
-    Service.update({_id: id}, data, function(err, service){
+    Event.update({_id: id}, data, function(err, event){
         if(!err){
             res.json({
                 success : true,
-                data : service,
+                data : event,
                 error : null
             });
         }else{
@@ -103,7 +132,7 @@ exports.updateCtrl = function(req, res, next){
 
 exports.removeCtrl = function(req, res, next){
     var id = req.params.id;
-    Service.remove({ _id : id },function(err){
+    Event.remove({ _id : id },function(err){
         if(!err){
             res.json({
                 success : true,

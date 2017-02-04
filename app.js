@@ -15,6 +15,9 @@ var routeMotor = require('./routes/motor');
 var routeFeature = require('./routes/feature');
 var routeAccessories = require('./routes/accessories');
 var routeSpecification = require('./routes/specification');
+var routeService = require('./routes/service');
+var routeNews = require('./routes/news');
+var routeEvent = require('./routes/event');
 
 var app = express();
 
@@ -48,6 +51,9 @@ app.use('/motor', routeMotor);
 app.use('/feature', routeFeature);
 app.use('/accessories', routeAccessories);
 app.use('/specification',routeSpecification);
+app.use('/service', routeService);
+app.use('/news', routeNews);
+app.use('/event', routeEvent);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
