@@ -25,7 +25,9 @@ console.log('connecting to database...');
 mongoose.connect('mongodb://localhost:27017/api_motor', function(err){
   if(!err){
     console.log('connected to mongodb');
-  }
+  }else{
+console.log(err);
+	}
 });
 
 
